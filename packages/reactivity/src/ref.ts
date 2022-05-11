@@ -1,3 +1,4 @@
+import { isArray } from './../../shared/src/index';
 import { hasChanged, isObject } from "@vue/shared";
 import { track, trigger } from "./effect";
 import { reactive } from "./reactive";
@@ -9,6 +10,18 @@ export function ref<T>(value: T) {
 
 export function shallowRef<T>(value: T) {
   return createRef(value, true);
+}
+
+export function toRef<T>(target: T, key: keyof T) {
+  return new ObjectRefImpl(target, key);
+}
+
+export function toRefs<T>(target: T) {
+  const refs:any = isArray(target) ? new Array(target.length) : {};
+  for(const key in target){
+    refs[key] = toRef(target,key);
+  }
+  return refs;
 }
 
 function createRef<T>(value: T, shallow: boolean = false) {
@@ -40,4 +53,16 @@ class RefImpl<T> {
 
 function convert<T>(value: T) {
   return isObject(value) ? reactive(value) : value;
+}
+
+class ObjectRefImpl<T> {
+  public __v_isRef = true;
+  constructor(public target: T, public key: keyof T) {}
+
+  get value() {
+    return this.target[this.key];
+  }
+  set value(newVal) {
+    this.target[this.key] = newVal;
+  }
 }

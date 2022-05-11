@@ -51,20 +51,22 @@ const createSetter = () => {
           Number(key) < target.length
         : // 对象
           hasOwn(target, key);
+    const res = Reflect.set(target, key, value, receiver);
     if (!hasKey) {
       trigger(target, "add", key, value);
       // 新增
-      return Reflect.set(target, key, value, receiver);
+      return res;
     } else if (hasChanged(oldVal, value)) {
-      trigger(target, "set", key, value, oldVal);
       // 修改
-      const res = Reflect.set(target, key, value, receiver);
+      // const res = Reflect.set(target, key, value, receiver);
       logger(
         `对 ${JSON.stringify(target)} 的 ${
           key as any
         } 进行设值操作：newValue = ${JSON.stringify(value)}`,
         "color:red"
       );
+      trigger(target, "set", key, value, oldVal);
+
       return res;
     }
     logger(

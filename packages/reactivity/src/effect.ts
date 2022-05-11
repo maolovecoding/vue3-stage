@@ -1,11 +1,12 @@
 import { isArray, isIntegerKey } from "@vue/shared";
 interface IOptions {
   lazy?: boolean;
+  scheduler?: (effect: IEffect) => void;
 }
 interface IFn {
   (...args: any): any;
 }
-interface IEffect {
+export interface IEffect {
   (...args: any): any;
   id: number;
   __isEffect: boolean;
@@ -109,7 +110,13 @@ export function trigger(
         break;
     }
   }
-  effects.forEach((effect) => effect());
+  effects.forEach((effect) => {
+    // 有用户的选项 将副作用函数交给用户执行
+    if (effect.options?.scheduler) {
+      return effect.options.scheduler(effect);
+    }
+    effect();
+  });
 }
 
 const targetMap = new WeakMap();
