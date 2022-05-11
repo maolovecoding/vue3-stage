@@ -1,12 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
 </head>
+
 <body>
+  <!-- <script src="../node_modules/vue/dist/vue.runtime.global.js"></script> -->
   <script src="../packages/reactivity/dist/reactivity.global.js"></script>
+  <script>
+    const { reactive, readonly, effect,ref } = VueReactivity
+    // const { reactive, readonly, effect } = Vue
+    // const obj = reactive({ name: "zs", age: 22, friends: [{ name: "张三" }] })
+    // obj.friends.push({ name: "李四" })
+    // console.log(obj.friends[0].name)
+    // effect(() => {
+    //   console.log(obj.name)
+    //   effect(() => {
+    //     console.log(obj.age)
+    //   })
+    // })
+    setTimeout(() => {
+      // obj.name = "你好！"
+      // obj.age = 222
+      // obj.test = '1'
+    }, 2000)
+
+    // const proxy = reactive({ name: "张三", hobbies: ["吃饭"] })
+    // effect(() => {
+    //   // console.log(JSON.stringify(proxy.hobbies))
+    //   console.log(proxy.hobbies[0])
+    // })
+    // setTimeout(() => {
+    //   // proxy.hobbies.push("睡觉")
+    //   proxy.hobbies.length = 2
+    // }, 1000)
+    const r = ref(true);
+    effect(()=>{
+      console.log(r.value)
+    })
+    setTimeout(()=>{
+      r.value = false
+    },100)
+  </script>
 </body>
+
 </html>

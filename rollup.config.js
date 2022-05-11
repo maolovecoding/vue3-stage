@@ -43,7 +43,7 @@ function createConfig(format, output, name) {
 }
 // 根据用户提供的formats选项 去我们自己的配置里取值进行生产配置文件
 export default buildOptions.formats.map((format) =>
-  createConfig(format, outputConfig[format], outputConfig["name"])
+  createConfig(format, outputConfig[format], buildOptions["name"])
 );
 
 // 一个包要打包多个格式 esModule commonjs iife 等
