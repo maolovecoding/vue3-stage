@@ -14,7 +14,7 @@ async function build(target) {
 // 打包指定模块
 const modules = process.argv.slice(2);
 // 没有指定打包的模块 就打包该模块
-if (modules.length === 0) build("reactivity");
+if (modules.length === 0) build("runtime-dom");
 else
   modules.forEach((module) => {
     // 循环打包

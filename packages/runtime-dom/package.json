@@ -1,17 +1,16 @@
 {
-  "name": "@vue/reactivity",
+  "name": "@vue/runtime-dom",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
   "buildOptions": {
-    "name": "VueReactivity",
+    "name": "VueRuntimeDOM",
     "formats": [
-      "global",
-      "cjs",
-      "esm-bundler"
+      "global"
     ]
   },
   "dependencies": {
-    "@vue/shared": "^1.0.0"
+    "@vue/shared": "1.0.0",
+    "@vue/runtime-core": "1.0.0"
   }
 }
