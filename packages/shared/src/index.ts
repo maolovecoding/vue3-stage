@@ -38,3 +38,7 @@ export const enum ShapeFlags {
 export function isString(value: unknown): value is string {
   return typeof value === "string";
 }
+
+export function isFunction(value: unknown): value is Function {
+  return typeof value === "function";
+}

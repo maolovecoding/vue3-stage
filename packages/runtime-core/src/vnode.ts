@@ -25,7 +25,11 @@ function normalizeChildren(vnode: IVnode, children: any) {
 }
 
 // 创建虚拟节点 -> 描述真实节点的一个对象
-export function createVnode(type: any, props: any, children = null): IVnode {
+export function createVnode(
+  type: any,
+  props: any,
+  children: null | any[] = null
+): IVnode {
   const shapeFlag = isString(type)
     ? ShapeFlags.ELEMENT
     : isObject(type)
