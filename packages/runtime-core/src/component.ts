@@ -1,4 +1,4 @@
-import { hasOwn, isFunction, isObject } from "@vue/shared";
+import { isFunction, isObject } from "@vue/shared";
 import componentPublicInstance from "./componentPublicInstance";
 import type { IVnode } from "./vnode";
 let uid = 0;
@@ -35,14 +35,19 @@ export function setupComponent(instance) {
   // 函数式组件 / 状态组件->调用setup函数
   setupStatefulComponent(instance);
 }
-
+export let currentInstance; // 导出当前的组件实例
+export const setCurrentInstance = (instance) => {
+  currentInstance = instance;
+};
 function setupStatefulComponent(instance) {
   const Component = instance.type; // 就是我们传入的组件对象
   const { setup } = Component;
   if (setup) {
     const setupContext = createSetupContext(instance);
+    currentInstance = instance;
     // setup函数的返回值 函数或者是一个普通对象
     const setupResult = setup(instance.props, setupContext);
+    currentInstance = null;
     handleSetupResult(instance, setupResult);
   }
 }

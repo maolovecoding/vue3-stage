@@ -3,6 +3,7 @@ import { createAppAPI, Render } from "./apiCreateApp";
 import { ShapeFlags } from "@vue/shared";
 import { createComponentInstance, setupComponent } from "./component";
 import { effect, IEffect } from "@vue/reactivity";
+import { invokeArrayFns } from "./apiLifecycle";
 
 const queue: IEffect[] = [];
 // 批量处理 多次更新 先去缓存去重 之后异步更新
@@ -51,6 +52,12 @@ export function createRenderer(renderOptions: any) {
       function componentEffect() {
         // 每次状态变化后 都会重新执行effect
         if (!instance.isMounted) {
+          // 生命周期
+          const { bm, m } = instance;
+          if (bm) {
+            invokeArrayFns(bm);
+            // bm.forEach((fn)=>fn());
+          }
           // 第一次渲染 render函数的参数是我们组件实例的代理对象
           // 组件渲染的内容就是subTree
           const subTree = (instance.subTree = instance.render.call(
@@ -58,9 +65,16 @@ export function createRenderer(renderOptions: any) {
             instance.proxy
           ));
           patch(null, subTree, container);
+          if (m) {
+            invokeArrayFns(m);
+          }
           // 标识挂载
           instance.isMounted = true;
         } else {
+          const { u, bu } = instance;
+          if (bu) {
+            invokeArrayFns(bu);
+          }
           // 更新
           const prevTree = instance.subTree; // 旧的渲染内容 vnode
           const nextSubTree = (instance.subTree = instance.render.call(
@@ -68,6 +82,9 @@ export function createRenderer(renderOptions: any) {
             instance.proxy
           )); // 新的subTree
           patch(prevTree, nextSubTree, container); // diff 算法
+          if (u) {
+            invokeArrayFns(u);
+          }
         }
       },
       {
@@ -200,7 +217,7 @@ export function createRenderer(renderOptions: any) {
         const childVnode = c2[i]; //
         keyToNewIndexMap.set(childVnode.key, i);
       }
-      console.log(keyToNewIndexMap);
+      // console.log(keyToNewIndexMap);
       const toBePatched = e2 - s2 + 1; // 将要patch的节点个数
       const newIndexToOldIndexMap = new Array(toBePatched).fill(0);
 
@@ -220,7 +237,7 @@ export function createRenderer(renderOptions: any) {
       }
       const increasingNewIndexSequence = getSequence(newIndexToOldIndexMap);
       let j = increasingNewIndexSequence.length - 1;
-      console.log(increasingNewIndexSequence);
+      // console.log(increasingNewIndexSequence);
       // 最后就是移动节点 并且将新增的节点插入 -》 最长递增子序列
       for (let i = toBePatched - 1; i >= 0; i--) {
         // 从后往前遍历插入节点
@@ -241,7 +258,7 @@ export function createRenderer(renderOptions: any) {
           }
         }
       }
-      console.log(newIndexToOldIndexMap);
+      // console.log(newIndexToOldIndexMap);
     }
   };
   const patchChildren = (n1, n2, container) => {
