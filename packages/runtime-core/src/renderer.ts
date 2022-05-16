@@ -2,7 +2,34 @@ import { IVnode } from "./vnode";
 import { createAppAPI, Render } from "./apiCreateApp";
 import { ShapeFlags } from "@vue/shared";
 import { createComponentInstance, setupComponent } from "./component";
-import { effect } from "@vue/reactivity";
+import { effect, IEffect } from "@vue/reactivity";
+
+const queue: IEffect[] = [];
+// 批量处理 多次更新 先去缓存去重 之后异步更新
+function queueJob(effect: IEffect) {
+  if (!queue.includes(effect)) {
+    queue.push(effect);
+    queueFlush();
+  }
+}
+let isFlushing = false;
+function queueFlush() {
+  if (!isFlushing) {
+    isFlushing = true;
+    Promise.resolve().then(flushJobs);
+  }
+}
+
+function flushJobs() {
+  isFlushing = false; // 批处理完成
+  // 先执行子还是父？
+  // 排序
+  queue.sort((a, b) => a.id - b.id);
+  for (let i = 0; i < queue.length; i++) {
+    queue[i]();
+  }
+  queue.length = 0;
+}
 
 // 不关心平台
 export function createRenderer(renderOptions: any) {
@@ -20,28 +47,33 @@ export function createRenderer(renderOptions: any) {
   } = renderOptions;
 
   const setupRenderEffect = (instance, container) => {
-    effect(function componentEffect() {
-      // 每次状态变化后 都会重新执行effect
-      if (!instance.isMounted) {
-        // 第一次渲染 render函数的参数是我们组件实例的代理对象
-        // 组件渲染的内容就是subTree
-        const subTree = (instance.subTree = instance.render.call(
-          instance.proxy,
-          instance.proxy
-        ));
-        patch(null, subTree, container);
-        // 标识挂载
-        instance.isMounted = true;
-      } else {
-        // 更新
-        const prevTree = instance.subTree; // 旧的渲染内容 vnode
-        const nextSubTree = (instance.subTree = instance.render.call(
-          instance.proxy,
-          instance.proxy
-        )); // 新的subTree
-        patch(prevTree, nextSubTree, container); // diff 算法
+    effect(
+      function componentEffect() {
+        // 每次状态变化后 都会重新执行effect
+        if (!instance.isMounted) {
+          // 第一次渲染 render函数的参数是我们组件实例的代理对象
+          // 组件渲染的内容就是subTree
+          const subTree = (instance.subTree = instance.render.call(
+            instance.proxy,
+            instance.proxy
+          ));
+          patch(null, subTree, container);
+          // 标识挂载
+          instance.isMounted = true;
+        } else {
+          // 更新
+          const prevTree = instance.subTree; // 旧的渲染内容 vnode
+          const nextSubTree = (instance.subTree = instance.render.call(
+            instance.proxy,
+            instance.proxy
+          )); // 新的subTree
+          patch(prevTree, nextSubTree, container); // diff 算法
+        }
+      },
+      {
+        scheduler: queueJob,
       }
-    });
+    );
   };
   const mountComponent = (n2: IVnode, container) => {
     // 1. 组件的创建 需要产生一个组件的实例 调用组件实例上的setup方法拿到render函数
